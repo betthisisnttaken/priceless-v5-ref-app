@@ -1,0 +1,1661 @@
+openapi: 3.0.0
+info:
+  description: Priceless API
+  version: "5.0.0"
+  title: Priceless API
+  termsOfService: 'https://www.priceless.com/terms'
+  contact:
+    name: Priceless API Support
+    email: apisupport@mastercard.com
+tags:
+  - name: products
+    description: Product data for api partners
+  - name: locations
+    description: >-
+      Available geographics that can be used as filter parameters for products resources
+  - name: estimates
+    description: >-
+      Request pricing estimate and create an estimate orderId that will be passed to the orders resource
+  - name: orders
+    description: >-
+      Order placement and order status resources
+  - name: languages
+    description: >-
+      Available languages that can be used to obtain translated data when the translation exists
+  - name: categories
+    description: >-
+      Available categories that can be used as a filter paramter to some of the product endpoints
+  - name: sessions
+    description: >-
+      Generate a session cookie that can be passed between api calls or to the webview.
+paths:
+  /products:
+    get:
+      tags:
+        - products
+      summary: Returns a list of productIds mapped to the partner.
+      operationId: allPartnerProductIds
+      parameters:
+        - in: query
+          name: partner_id
+          description: partnerId provided by Priceless
+          required: true
+          schema:
+            type: number
+            default: 493
+            example: 493
+        - in: query
+          name: language_id
+          description: >-
+            Filters all the products by availability in the specified language
+          schema:
+            type: number
+            default: 1
+            example: 1
+        - in: query
+          name: geographic_id
+          description: >-
+            Filters all the products by availability in the specified geographic 
+          schema:
+            type: number
+            default: 0
+            example: 0
+        - in: query
+          name: checkout_only
+          description: >-
+            Filters all the products by availability to complete checkout through the api, pass 1 to enable.
+          schema:
+            type: number
+            default: 0
+            example: 0
+        - in: query
+          name: category_ids
+          description: >-
+            Filters all the products by availablity in the specfied categoryIds. Can be a string with a single categoryId or a comma separated list of categoryIds. (Default value is empty string which applies no filtering by category)
+          schema:
+            type: string
+            example: false 
+        - in: query
+          name: session_cookie
+          description: >-
+            Allows a session to persist across API calls or when a webview is rendered from within the app. If an invalid cookie is sent, an error will be returned telling the user to start a new session which can be done by calling the /sessions resource
+          schema:
+            type: string
+        - in: query
+          name: additional_fields
+          description: >-
+            Returns limited product information in addition to the normal response. For full product info, please use the /products/{productId} endpoint. Pass 1 to enable.
+          schema:
+            type: number
+            default: 0
+            example: 0
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+                    example: OK
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AllProductIdsStruct'
+                    example:
+                      - productId: 82980
+                        masterProductIds:
+                          - 82980
+                        hasVersion: 2
+                        childrenProductIds:
+                          - 82981
+                          - 82982
+                      - productId: 83015
+                        masterProductIds:
+                          - 83015
+                        hasVersion: 0
+                        childrenProductIds: []
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - Errors
+                properties:
+                  Errors:
+                    type: object
+                    required:
+                      - Error
+                    properties:
+                      Error:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/ErrorItems'
+                        example:
+                          Source: Priceless Cities API
+                          ReasonCode: '402'
+                          Description: Missing parnter_id
+                          Recoverable: true
+                          Details: []
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - Errors
+                properties:
+                  Errors:
+                    type: object
+                    required:
+                      - Error
+                    properties:
+                      Error:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/ErrorItems'
+                        example:
+                          - Source: Priceless API
+                            ReasonCode: '455'
+                            Description: Api Unauthorized
+                            Recoverable: true
+                            Details:
+                              - Name: Unauthorized
+                                Value: Please contact API support
+  '/products/{product_id}':
+    get:
+      tags:
+        - products
+      summary: Returns the product info for a specific product_id.
+      operationId: productInfo
+      parameters:
+        - in: path
+          name: product_id
+          description: productId for requested product info.
+          required: true
+          schema:
+            type: number
+            default: 100000
+        - in: query
+          name: partner_id
+          description: partnerId provided by Priceless Cities
+          required: true
+          schema:
+            type: number
+            default: 493
+        - in: query
+          name: language_id
+          description: >-
+            Returns the product data in the language specified. If this parameter is not passed will return English (default value is 1 (English))
+          schema:
+            type: number
+            default: 1
+        - in: query
+          name: session_cookie
+          description: >-
+            Allows a session to persist across API calls or when a webview is rendered from within the app. If an invalid cookie is sent, an error will be returned telling the user to start a new session which can be done by calling the /sessions resource
+          schema:
+            type: string
+            default: ""
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductInfo'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - Errors
+                properties:
+                  Errors:
+                    type: object
+                    required:
+                      - Error
+                    properties:
+                      Error:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/ErrorItems'
+                        example:
+                          Source: Priceless API
+                          ReasonCode: '402'
+                          Description: Missing partner_id
+                          Recoverable: true
+                          Details: []
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - Errors
+                properties:
+                  Errors:
+                    type: object
+                    required:
+                      - Error
+                    properties:
+                      Error:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/ErrorItems'
+                        example:
+                          - Source: Priceless API
+                            ReasonCode: '455'
+                            Description: Api Unauthorized
+                            Recoverable: true
+                            Details:
+                              - Name: Unauthorized
+                                Value: Please contact API support
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - Errors
+                properties:
+                  Errors:
+                    type: object
+                    required:
+                      - Error
+                    properties:
+                      Error:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/ErrorItems'
+                        example:
+                          - Source: Priceless API
+                            ReasonCode: '453'
+                            Description: Api Invalid or Inactive product_id
+                            Recoverable: true
+                            Details: []
+  '/products/{product_id}/inventories':
+    get:
+      tags:
+        - products
+      summary: Returns the product inventory count for a specific product_id.
+      operationId: inventory
+      parameters:
+        - in: path
+          name: product_id
+          description: productId for requested product inventory.
+          required: true
+          schema:
+            type: number
+            default: 100000
+        - in: query
+          name: partner_id
+          description: partnerId provided by Priceless
+          required: true
+          schema:
+            type: number
+            default: 493
+        - in: query
+          name: session_cookie
+          description: >-
+            Allows a session to persist across API calls or when a webview is rendered from within the app. If an invalid cookie is sent, an error will be returned telling the user to start a new session which can be done by calling the /sessions resource
+          schema:
+            type: string
+            default: ""
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductInventory'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - Errors
+                properties:
+                  Errors:
+                    type: object
+                    required:
+                      - Error
+                    properties:
+                      Error:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/ErrorItems'
+                        example:
+                          Source: Priceless Cities API
+                          ReasonCode: '402'
+                          Description: Missing partner_id
+                          Recoverable: true
+                          Details: []
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - Errors
+                properties:
+                  Errors:
+                    type: object
+                    required:
+                      - Error
+                    properties:
+                      Error:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/ErrorItems'
+                        example:
+                          - Source: Priceless API
+                            ReasonCode: '455'
+                            Description: Api Unauthorized
+                            Recoverable: true
+                            Details:
+                              - Name: Unauthorized
+                                Value: Please contact API support
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - Errors
+                properties:
+                  Errors:
+                    type: object
+                    required:
+                      - Error
+                    properties:
+                      Error:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/ErrorItems'
+                        example:
+                          - Source: Priceless API
+                            ReasonCode: '489'
+                            Description: Api No Product Found
+                            Recoverable: true
+                            Details: []
+  '/products/{product_id}/available-translations':
+    get:
+      tags:
+        - products
+      summary: Returns the available translations for a specific product_id.
+      operationId: productTranslations
+      parameters:
+        - in: path
+          name: product_id
+          description: productId for requested availble translations.
+          required: true
+          schema:
+            type: number
+            default: 100000
+        - in: query
+          name: partner_id
+          description: partnerId provided by Priceless
+          required: true
+          schema:
+            type: number
+            default: 493
+        - in: query
+          name: session_cookie
+          description: >-
+            Allows a session to persist across API calls or when a webview is rendered from within the app. If an invalid cookie is sent, an error will be returned telling the user to start a new session which can be done by calling the /sessions resource
+          schema:
+            type: string
+            default: ""
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+                    example: OK
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ProductLanguages'
+                    example:
+                      - languageId: 1
+                        languageName: English
+                      - languageId: 2
+                        languageName: Spanish
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - Errors
+                properties:
+                  Errors:
+                    type: object
+                    required:
+                      - Error
+                    properties:
+                      Error:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/ErrorItems'
+                        example:
+                          Source: Priceless API
+                          ReasonCode: '402'
+                          Description: Missing partner_id
+                          Recoverable: true
+                          Details: []
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - Errors
+                properties:
+                  Errors:
+                    type: object
+                    required:
+                      - Error
+                    properties:
+                      Error:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/ErrorItems'
+                        example:
+                          - Source: Priceless API
+                            ReasonCode: '455'
+                            Description: Api Unauthorized
+                            Recoverable: true
+                            Details:
+                              - Name: Unauthorized
+                                Value: Please contact API support
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - Errors
+                properties:
+                  Errors:
+                    type: object
+                    required:
+                      - Error
+                    properties:
+                      Error:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/ErrorItems'
+                        example:
+                          - Source: Priceless API
+                            ReasonCode: '489'
+                            Description: Api Invalid or Inactive product_id
+                            Recoverable: true
+                            Details: []
+  /estimates:
+    post:
+      tags:
+        - estimates
+      summary: >-
+        Resource should be used to get pricing estimation as well as an estimate orderId that must be passed to the orders resource. The estimate orderId will be valid for 15 minutes.
+      operationId: estimateCreate
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - partnerId
+                - items
+                - shippingAddress
+                - billingAddress
+              properties:
+                partnerId:
+                  type: number
+                items:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/OrderItems'
+                shippingAddress:
+                  $ref: '#/components/schemas/ShippingAddress'
+                billingAddress:
+                  $ref: '#/components/schemas/ShippingAddress'
+                sessionCookie:
+                  type: string
+                  example: wMztasMwXafIV9yket8J
+              example:
+                partnerId: 493
+                items:
+                  - productId: 1000000 
+                    peoplePerItem: 2
+                    quantity: 1
+                shippingAddress:
+                  firstName: Luke
+                  lastName: Evans
+                  line1: 123 Priceless Ave.
+                  city: San Francisco
+                  state: California
+                  postalCode: "94109"
+                  country: US
+                  phone: "5556667878"
+                billingAddress: 
+                  firstName: Luke
+                  lastName: Evans
+                  line1: 123 Priceless Ave.
+                  city: San Francisco
+                  state: California
+                  postalCode: "94109"
+                  country: US
+                  phone: "5556667878"
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+                    example: OK
+                  data:
+                    $ref: '#/components/schemas/EstimateResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - Errors
+                properties:
+                  Errors:
+                    type: object
+                    required:
+                      - Error
+                    properties:
+                      Error:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/ErrorItems'
+                        example:
+                          Source: Priceless API
+                          ReasonCode: '402'
+                          Description: Missing partner_id
+                          Recoverable: true
+                          Details: []
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - Errors
+                properties:
+                  Errors:
+                    type: object
+                    required:
+                      - Error
+                    properties:
+                      Error:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/ErrorItems'
+                        example:
+                          - Source: Priceless API
+                            ReasonCode: '455'
+                            Description: Api Unauthorized
+                            Recoverable: true
+                            Details:
+                              - Name: Unauthorized
+                                Value: Please contact API support
+  /orders:
+    post:
+      tags:
+        - orders
+      summary: >-
+        Resource should to place an order. It is required that a valid orderId that was returned from the estimate resource is passed with the request within 15 minutes.
+      operationId: orderCreate
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - partnerId
+                - orderId
+                - email
+                - items
+                - shippingAddress
+                - billingAddress
+                - payment
+                - emailAddress
+              properties:
+                partnerId:
+                  type: number
+                  example: 10
+                orderId:
+                  type: number
+                  example: 51
+                email:
+                  type: string
+                  example: luke@priceless.com
+                languageId:
+                  type: number
+                  example: 1
+                items:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/OrderItems'
+                shippingAddress:
+                  $ref: '#/components/schemas/ShippingAddress'
+                billingAddress:
+                  $ref: '#/components/schemas/ShippingAddress'
+                payment:
+                  $ref: '#/components/schemas/Payment'
+                sessionCookie:
+                  type: string
+                  example: wMztasMwXafIV9yket8J
+              example:
+                partnerId: 493
+                orderId: 51
+                email: luke@priceless.com
+                languageId: 1
+                items:
+                  - productId: 10000000 
+                    peoplePerItem: 2
+                    quantity: 1
+                shippingAddress:
+                  firstName: Luke
+                  lastName: Evans
+                  line1: 123 Priceless Ave.
+                  city: San Francisco
+                  state: California
+                  postalCode: "94109"
+                  country: US
+                  phone: "5556667878"
+                billingAddress: 
+                  firstName: Luke
+                  lastName: Evans
+                  line1: 123 Priceless Ave.
+                  city: San Francisco
+                  state: California
+                  postalCode: "94109"
+                  country: US
+                  phone: "5556667878"
+                payment:
+                  creditCard:
+                    cardHolderName: Luke Evans
+                    cardNumber: 5555555555554444
+                    expirationMonth: 10
+                    expirationYear: 2022
+                    ccv: 427
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+                    example: OK
+                  data:
+                    type: object
+                    properties:
+                      apiOrderId:
+                        type: number
+                        example: 51
+                      orderId:
+                        type: number
+                        example: 1000
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - Errors
+                properties:
+                  Errors:
+                    type: object
+                    required:
+                      - Error
+                    properties:
+                      Error:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/ErrorItems'
+                        example:
+                          Source: Priceless API
+                          ReasonCode: '402'
+                          Description: Missing partner_id
+                          Recoverable: true
+                          Details: []
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - Errors
+                properties:
+                  Errors:
+                    type: object
+                    required:
+                      - Error
+                    properties:
+                      Error:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/ErrorItems'
+                        example:
+                          - Source: Priceless API
+                            ReasonCode: '455'
+                            Description: Api Unauthorized
+                            Recoverable: true
+                            Details:
+                              - Name: Unauthorized
+                                Value: Please contact API support
+  '/orders/{order_id}/statuses':
+    get:
+      tags:
+        - orders
+      summary: >-
+        Returns the status of a placed order
+      operationId: orderStatuses
+      parameters:
+        - in: path
+          name: order_id
+          description: order_id froma a previously placed order
+          required: true
+          schema:
+            type: number
+            example: 100
+        - in: query
+          name: partner_id
+          description: partner_id provided by Priceless
+          required: true
+          schema:
+            type: number
+            example: 493
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+                    example: OK
+                  data:
+                    type: object
+                    properties:
+                      orderId:
+                        type: number
+                        example: 1000
+                      orderStatusName:
+                        type: string
+                        example: Pending Experience
+                      orderStatusId:
+                        type: number
+                        example: 22
+                      changeTime:
+                        type: string
+                        example: "2019-11-26 20:02:09"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - Errors
+                properties:
+                  Errors:
+                    type: object
+                    required:
+                      - Error
+                    properties:
+                      Error:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/ErrorItems'
+                        example:
+                          Source: Priceless Cities API
+                          ReasonCode: '402'
+                          Description: Missing partner_id
+                          Recoverable: true
+                          Details: []
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - Errors
+                properties:
+                  Errors:
+                    type: object
+                    required:
+                      - Error
+                    properties:
+                      Error:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/ErrorItems'
+                        example:
+                          - Source: Priceless API
+                            ReasonCode: '455'
+                            Description: Api Unauthorized
+                            Recoverable: true
+                            Details:
+                              - Name: Unauthorized
+                                Value: Please contact API support
+  /locations:
+    get:
+      tags:
+        - locations
+      summary: >-
+        Returns the available geographic names and geographic_ids that can be used for filtering product resources
+      operationId: locations
+      parameters:
+        - in: query
+          name: partner_id
+          description: partner_id provided by Priceless
+          required: true
+          schema:
+            type: number
+            default: 493
+        - in: query
+          name: session_cookie
+          description: >-
+            Allows a session to persist across API calls or when a webview is rendered from within the app. If an invalid cookie is sent, an error will be returned telling the user to start a new session which can be done by calling the /sessions resource
+          schema:
+            type: string
+            default: ""
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+                    example: OK
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Geographics'
+                    example:
+                      - geographicId: 330
+                        geographicName: New York
+                      - geographicId: 298
+                        geographicName: San Francisco Bay Area
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - Errors
+                properties:
+                  Errors:
+                    type: object
+                    required:
+                      - Error
+                    properties:
+                      Error:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/ErrorItems'
+                        example:
+                          Source: Priceless Cities API
+                          ReasonCode: '402'
+                          Description: Missing partner_id
+                          Recoverable: true
+                          Details: []
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - Errors
+                properties:
+                  Errors:
+                    type: object
+                    required:
+                      - Error
+                    properties:
+                      Error:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/ErrorItems'
+                        example:
+                          - Source: Priceless API
+                            ReasonCode: '455'
+                            Description: Api Unauthorized
+                            Recoverable: true
+                            Details:
+                              - Name: Unauthorized
+                                Value: Please contact API support
+  /languages:
+    get:
+      tags:
+        - languages
+      summary: >-
+        Returns the available language names and language ids that can be used for requesting translations
+      operationId: languages
+      parameters:
+        - in: query
+          name: partner_id
+          description: partnerId provided by Priceless
+          required: true
+          schema:
+            type: number
+            example: 493
+        - in: query
+          name: session_cookie
+          description: >-
+            Allows a session to persist across API calls or when a webview is rendered from within the app. If an invalid cookie is sent, an error will be returned telling the user to start a new session which can be done by calling the /sessions resource
+          schema:
+            type: string
+            example: ""
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+                    example: OK
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Languages'
+                    example:
+                      - languageId: 1
+                        languageName: English
+                      - languageId: 2
+                        languageName: Spanish
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - Errors
+                properties:
+                  Errors:
+                    type: object
+                    required:
+                      - Error
+                    properties:
+                      Error:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/ErrorItems'
+                        example:
+                          Source: Priceless API
+                          ReasonCode: '402'
+                          Description: Missing partner_id
+                          Recoverable: true
+                          Details: []
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - Errors
+                properties:
+                  Errors:
+                    type: object
+                    required:
+                      - Error
+                    properties:
+                      Error:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/ErrorItems'
+                        example:
+                          - Source: Priceless API
+                            ReasonCode: '455'
+                            Description: Api Unauthorized
+                            Recoverable: true
+                            Details:
+                              - Name: Unauthorized
+                                Value: Please contact API support
+  /categories:
+    get:
+      tags:
+        - categories
+      summary: >-
+        Returns the available category names and category ids that can be used for filtering product resources
+      operationId: categories
+      parameters:
+        - in: query
+          name: partner_id
+          description: partnerId provided by Priceless
+          required: true
+          schema:
+            type: number
+            example: 493
+        - in: query
+          name: session_cookie
+          description: >-
+            Allows a session to persist across API calls or when a webview is rendered from within the app. If an invalid cookie is sent, an error will be returned telling the user to start a new session which can be done by calling the /sessions resource
+          schema:
+            type: string
+            example: ""
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+                    example: OK
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Categories'
+                    example:
+                      - catId: 1
+                        catName: Sports
+                      - catId: 2
+                        catName: Entertainment
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - Errors
+                properties:
+                  Errors:
+                    type: object
+                    required:
+                      - Error
+                    properties:
+                      Error:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/ErrorItems'
+                        example:
+                          Source: Priceless API
+                          ReasonCode: '402'
+                          Description: Missing partner_id
+                          Recoverable: true
+                          Details: []
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - Errors
+                properties:
+                  Errors:
+                    type: object
+                    required:
+                      - Error
+                    properties:
+                      Error:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/ErrorItems'
+                        example:
+                          - Source: Priceless API
+                            ReasonCode: '455'
+                            Description: Api Unauthorized
+                            Recoverable: true
+                            Details:
+                              - Name: Unauthorized
+                                Value: Please contact API support
+  /sessions:
+    post:
+      tags:
+        - sessions
+      summary: >-
+        Resource should be used to generate a session cookie. This should be called to generate a new session cookie at the start of a session or when a previously created session cookie expires. The cookie can be passed to the other api endpoints or a webview to load the same session across multiple request.
+      operationId: sessionCreate
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - partnerId
+              properties:
+                partnerId:
+                  type: number
+                  example: 493
+              example:
+                partnerId: 493
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+                    example: OK
+                  data:
+                    type: object
+                    properties:
+                      sessionCookie:
+                        type: string
+                        example: wMztasMwXafIV9yket8J
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - Errors
+                properties:
+                  Errors:
+                    type: object
+                    required:
+                      - Error
+                    properties:
+                      Error:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/ErrorItems'
+                        example:
+                          Source: Priceless API
+                          ReasonCode: '402'
+                          Description: Missing partner_id
+                          Recoverable: true
+                          Details: []
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - Errors
+                properties:
+                  Errors:
+                    type: object
+                    required:
+                      - Error
+                    properties:
+                      Error:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/ErrorItems'
+                        example:
+                          - Source: Priceless API
+                            ReasonCode: '455'
+                            Description: Api Unauthorized
+                            Recoverable: true
+                            Details:
+                              - Name: Unauthorized
+                                Value: Please contact API support
+servers:
+  - url: https://demo.priceless.com/api
+components:
+  schemas:
+    ErrorItems:
+      type: object
+      properties:
+        Source:
+          type: string
+          example: Priceless API
+        ReasonCode:
+          type: string
+          example: '402'
+        Description:
+          type: string
+          example: Missing partner_id
+        Recoverable:
+          type: boolean
+          example: true
+        Details:
+          type: array
+          default: []
+          items:
+            type: object
+            properties:
+              Name:
+                type: string
+                example: Missing partner_id error
+              Value:
+                type: string
+                example: Passing unique partner_id is required for this request
+    AllProductIdsStruct:
+      type: object
+      properties:
+        productId:
+          type: number
+          example: 82980
+        masterProductIds:
+          type: array
+          items:
+            type: number
+            example: 82980
+        hasVersion:
+          type: number
+          example: 1
+        childrenProductIds:
+          type: array
+          default: []
+          items:
+            type: number
+            example: 82981
+    ProductInfo:
+      type: object
+      properties:
+        msg:
+          type: string
+          example: OK
+        data:
+          type: object
+          properties:
+            productId:
+              type: number
+              example: 123
+            displayName:
+              type: string
+              example: Limited Edition Kobe Donation Badge
+            longDescription:
+              type: string
+              example: >-
+                Help Kobe enrich the lives of youth and families in need with a limited-edition digital badge. Flaunt the badge on your Facebook, Twitter, or Pinterest page to show your love as a true fan for Kobe and support his charity, The Kobe and Vanessa Bryant Family Foundation. There are only 100 Limited Edition Badges, so get them while you can! As an added bonus, 5 random fans who purchased the badge will get a personal Facebook message delivered from Kobe himself!
+            description:
+              type: string
+              example: Only 100 of these badges will be sold so get yours today!
+            specialOffer:
+              type: number
+              example: 1
+            celebId:
+              type: number
+              example: 5
+            localeId:
+              type: number
+              example: 1
+            celebName:
+              type: string
+              example: Kobe Bryant
+            celebUrl:
+              type: string
+              example: 'https://www.priceless.com/celebrity/5'
+            celebImageUrl:
+              type: string
+              example: >-
+                https://www.priceless.com/media/celebrities/5/products/kobe_bryant.jpg
+            charityId:
+              type: number
+              example: 5
+            charityName:
+              type: string
+              example: The Kobe and Vanessa Bryant Family Foundation
+            charityUrl:
+              type: string
+              example: 'http://www.priceless.com/charity/5'
+            productThumbImage:
+              type: string
+              example: kb_thumb.png
+            productImageNew:
+              type: string
+              example: ''
+            details:
+              type: string
+              example: >-
+                <li>One (1) exclusive Kobe digital badge for use on personal
+                Facebook, Twitter, and Pinterest page</li> <li>Max of 12
+                characters</li> <li>Serial number out of 100</li> <li>1/20
+                chance to win the lottery for a personal Facebook message from
+                Kobe</li> </ul>
+            productTerms:
+              type: string
+              example: By purchasing this product I agree...
+            eventTime:
+              type: string
+              example: '0000-00-00 00:00:00'
+            eventCity:
+              type: string
+              example: ''
+            latitude:
+              type: number
+              example: 37.4562557
+            longitude:
+              type: number
+              example: 126.705206
+            geographicId:
+              type: number
+              example: 8865
+            sharedPeoplePerItem:
+              type: number
+              example: 1
+            eventVenue:
+              type: string
+              example: ''
+            catId:
+              type: number
+              example: 35
+            catName:
+              type: string
+              example: Sports
+            catUrl:
+              type: string
+              example: 'https://www.priceless.com/category/35'
+            allCategories:
+              type: array
+              items:
+                $ref: '#/components/schemas/AllCatIds'
+              example:
+                - catId: 35
+                  catName: Sports
+                - catId: 66
+                  catName: Priceless Experiences
+            eventDuration:
+              type: string
+              example: ''
+            imageUrl:
+              type: string
+              example: >-
+                https://www.priceless.com/media/celebrities/5/products/kb_thumb.png
+            productUrl:
+              type: string
+              example: 'https://www.priceless.com/p/123'
+            cardExclusivity:
+              type: array
+              items:
+                type: string
+              example:
+                - World Elite Mastercard
+                - World Mastercard
+            issuerExclusivity:
+              type: array
+              items:
+                $ref: '#/components/schemas/IssuerExclusivity'
+              example:
+                - mastercardIssuerId: 230
+                  mastercardIssuerName: MASTERCAJAS S.A.
+                - masterCardIssuerId: 1130
+                  mastercardIssuerName: CHASE BANK USA, N.A.
+            punchoutInfo:
+              type: object
+              properties:
+                punchOutStyleName:
+                  type: string
+                  example: Phone Call
+                punchOutActive:
+                  type: number
+                  example: 1
+                punchOutInstructions:
+                  type: string
+                  example: To book this offer, please call the above number
+                punchOutPhoneNumber:
+                  type: string
+                  example: 8 905 788 89 15
+                priceText:
+                  type: string
+                  example: 'Cost: 6,000 roubles'
+            geographicInclusions:
+              type: object
+            geographicExclusions:
+              type: object
+            price:
+              type: string
+              example: '49.99'
+            currencyCode:
+              type: string
+              example: USD
+            currencyCharacter:
+              type: string
+              example: US$
+            sourcedSiteName:
+              type: string
+              example: mastercard
+            initiativeName:
+              type: string
+              example: US open
+            voiceSkillDescription:
+              type: string
+              example: This is a voice product description
+            variants:
+              type: array
+              items:
+                $ref: '#/components/schemas/ProductVariants'
+              example:
+                - productId: 123
+                  peoplePerItem: 1
+                  price: '49.99'
+                - productId: 123
+                  peoplePerItem: 2
+                  price: '99.98'
+            extraInfo:
+              type: object
+    ProductVariants:
+      type: object
+      properties:
+        productId:
+          type: number
+          example: 140965
+        peoplePerItem:
+          type: number
+          example: 2
+        price:
+          type: string
+          example: '4,300'
+    AllCatIds:
+      type: object
+      properties:
+        catId:
+          type: number
+          example: 503
+        catName:
+          type: string
+          example: pchomepage
+    IssuerExclusivity:
+      type: object
+      properties:
+        mastercardIssuerId:
+          type: number
+          example: 1011
+        mastercardIssuerName:
+          type: string
+          example: 'CHASE BANK USA, N.A.'
+    ProductInventory:
+      type: object
+      properties:
+        msg:
+          type: string
+          example: OK
+        data:
+          type: object
+          properties:
+            inventoryCount:
+              type: number
+              example: 2
+    ProductLanguages:
+      type: object
+      properties:
+        languageId:
+          type: number
+          example: 1
+        languageName:
+          type: string
+          example: English
+    Geographics:
+      type: object
+      properties:
+        geographicId:
+          type: number
+          example: 330
+        geographicName:
+          type: string
+          example: New York
+    Languages:
+      type: object
+      properties:
+        languageId:
+          type: number
+          example: 1
+        languageName:
+          type: string
+          example: English
+    Categories:
+      type: object
+      properties:
+        catId:
+          type: number
+          example: 1
+        catName:
+          type: string
+          example: Sports
+    OrderItems:
+      type: object
+      properties:
+        productId:
+          type: number
+          example: 123
+        peoplePerItem:
+          type: number
+          example: 2
+        quantity:
+          type: number
+          example: 1
+    ShippingAddress:
+      type: object
+      properties:
+        firstName:
+          type: string
+          example: Luke
+        lastName:
+          type: string
+          example: Evans
+        line1:
+          type: string
+          example: 123 Priceless Ave.
+        city:
+          type: string
+          example: San Francisco
+        state:
+          type: string
+          example: California
+        postalCode:
+          type: string
+          example: 94109
+        country:
+          type: string
+          example: US
+        phone:
+          type: string
+          example: 5556667878
+    EstimateResponse:
+      type: object
+      properties:
+        orderId:
+          type: number
+          example: 51
+        itemPriceList:
+          type: array
+          items:
+            type: object
+            properties:
+              productId: 
+                type: number
+                example: 123
+              peoplePerItem:
+                type: number
+                example: 1
+              quantity: 
+                type: number
+                example: 2
+              unitPrice: 
+                type: number
+                example: 7000
+        tax:
+          type: number
+          example: 1050
+        shippingMethod:
+          type: string
+          example: Ground
+        shipping:
+          type: number
+          example: 0
+        subtotal:
+          type: number
+          example: 14000
+        total:
+          type: number
+          example: 15500
+        currencyCode:
+          type: string
+          example: USD
+    Payment:
+      type: object
+      properties:
+        creditCard:
+          type: object
+          properties:
+            cardHolderName:
+              type: string
+              example: Luke Evans
+            cardNumber:
+              type: number
+              example: 5555555555554444
+            expirationMonth:
+              type: number
+              example: 10
+            expirationYear:
+              type: number
+              example: 2022
+            ccv:
+              type: number
+              example: 274
