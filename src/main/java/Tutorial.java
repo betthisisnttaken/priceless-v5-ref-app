@@ -3,7 +3,6 @@ import com.mastercard.developer.interceptors.OkHttpOAuth1Interceptor;
 import com.mastercard.developer.utils.AuthenticationUtils;
 import org.openapitools.client.ApiClient;
 import org.openapitools.client.ApiException;
-import org.openapitools.client.ApiResponse;
 import org.openapitools.client.api.*;
 import org.openapitools.client.model.*;
 
@@ -12,105 +11,111 @@ import java.math.BigDecimal;
 import java.security.*;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
+import java.util.ResourceBundle;
 
 public class Tutorial {
 
     public Tutorial() throws CertificateException, UnrecoverableKeyException, NoSuchAlgorithmException, IOException, KeyStoreException, NoSuchProviderException, ApiException {
 
-        System.out.println("In Tutorial Const");
-
-        BigDecimal mPartnerID = BigDecimal.valueOf(522);
-
+        // Read in application properties.
+        ResourceBundle resourceBundle = ResourceBundle.getBundle("application");
+        BigDecimal partnerID = new BigDecimal(resourceBundle.getString("mastercard.api.partnerid"));
         PrivateKey signingKey = AuthenticationUtils.loadSigningKey(
-                "/Users/derekhumphreys/Documents/MCD_Sandbox_Priceless_v5_Ref_App_API_Keys/Priceless_v5_Ref_App-sandbox.p12",
-                "keyalias",
-                "keystorepassword");
-
-        System.out.println("Have private key");
-
-        String consumerKey = "YDUUAwzkE5nBVUpeJcO2AeOqzMyLjmweetHBOl8d52d5bc35!2c94bec224cd4fce8e66661a33d8b4bf0000000000000000";
-
-        System.out.println("Set consumer key");
+                resourceBundle.getString("mastercard.api.p12.path"),
+                resourceBundle.getString("mastercard.api.key.alias"),
+                resourceBundle.getString("mastercard.api.keystore.password"));
+        String consumerKey = resourceBundle.getString("mastercard.api.consumer.key");
 
         ApiClient apiClient = new ApiClient();
-        System.out.println("After new ApiClient");
-
-        apiClient.setBasePath("https://stage.api.mastercard.com/pricelessapiv5");
-        System.out.println("After ApiClient set Base Path");
-
+        apiClient.setBasePath(resourceBundle.getString("mastercard.api.basePath"));
         apiClient.setDebugging(true);
-        System.out.println("After ApiClient set debugging");
 
+        // Add the Interceptor that will ensure the keys are added to every request.
         apiClient.setHttpClient(apiClient.getHttpClient().newBuilder().addInterceptor(new OkHttpOAuth1Interceptor(consumerKey, signingKey)).build());
-        System.out.println("After ApiClient set HttpClient");
 
-        //[DH]ServiceApi serviceApi = new ServiceApi(client);
-        //[DH]ApiCallback mListener = new A();
+        // Create session for Priceless API calls.
         InlineObject2 sessionCreateParams = new InlineObject2();
-        sessionCreateParams.setPartnerId(mPartnerID);
-        System.out.println("After crete sessionCreateParams with 522");
-
+        sessionCreateParams.setPartnerId(partnerID);
         SessionsApi session = new SessionsApi(apiClient);
-        System.out.println("After new SessionsApi");
-
-        //[DH]langApi.languagesCall(BigDecimal.valueOf(522), session.sessionCreate(mInlineObject2).toString(), mListener);
-        InlineResponse2008 mSession = session.sessionCreate(sessionCreateParams);
+        SessionResponse mSession = session.sessionCreate(sessionCreateParams);
+        // Store session cookie to pass into all Priceless API calls.
         String sessionCookie = mSession.getData().getSessionCookie();
-        System.out.println("After create session");
 
+        // Get all languages available.
         LanguagesApi languagesApi = new LanguagesApi(apiClient);
-        System.out.println("After new LanguagesApi");
+        InlineResponse2006 langApiResponse = languagesApi.languages(partnerID, sessionCookie);
+        System.out.println("Languages available: " + langApiResponse.toString());
 
-        InlineResponse2006 langApiResponse = languagesApi.languages(mPartnerID, sessionCookie);
-        System.out.println("After languagesApi.languages" + langApiResponse.toString());
+        // Get language ID for English (US) so we can filter products to English (US) only.
+        Languages englishUS = langApiResponse.getData().stream()
+                .filter(language -> "English (US)".equals(language.getLanguageName()))
+                .findAny()
+                .orElse(null);
 
+        // Get all product categories and their codes - can be used to filter product list.
         CategoriesApi categoriesAPI = new CategoriesApi(apiClient);
-        InlineResponse2007 catApiResponse = categoriesAPI.categories(mPartnerID, sessionCookie);
-        System.out.println("After categoriesAPI.categories" + catApiResponse.toString());
+        InlineResponse2007 catApiResponse = categoriesAPI.categories(partnerID, sessionCookie);
+        System.out.println("Categories available: " + catApiResponse.toString());
 
+        // Get all locations where products are available - can be used to filter product list.
         LocationsApi locationsAPI = new LocationsApi(apiClient);
-        InlineResponse2005 locationsApiResponse = locationsAPI.locations(mPartnerID, sessionCookie);
-        System.out.println("After locationsAPI.locations" + locationsApiResponse.toString());
+        InlineResponse2005 locationsApiResponse = locationsAPI.locations(partnerID, sessionCookie);
+        System.out.println("Locations available: " + locationsApiResponse.toString());
 
+        // Get information about the Products - list of products, product info, product inventory.
         ProductsApi productsAPI = new ProductsApi(apiClient);
-        BigDecimal languageId = BigDecimal.valueOf(1); // English US
-        BigDecimal geographicId = BigDecimal.valueOf(0); // 330 is New York
         BigDecimal checkoutOnly = BigDecimal.valueOf(1); // 1 is products that can be checked out via API
         String categoryIds = ""; // Comma delimited list of category ids to filter
         BigDecimal additionalFields = BigDecimal.valueOf(0); // 1 is to include extra data
-        BigDecimal productID = BigDecimal.valueOf(141487); // 133459, 140944, 141487, 145599, 145767, 146544, 146778, 158137, 160147
 
-        InlineResponse200 productIDsInlineResponse = productsAPI.allPartnerProductIds(mPartnerID, languageId, geographicId, checkoutOnly, categoryIds, sessionCookie, additionalFields);
-        System.out.println("After productsAPI.allPartnerProductIds" + productIDsInlineResponse.toString());
+        // Get geographic ID for Chicago so we can filter products to Chicago region only.
+        Geographics chicago = locationsApiResponse.getData().stream()
+                .filter(geographic -> "Chicago".equals(geographic.getGeographicName()))
+                .findAny()
+                .orElse(null);
 
-        ProductInventory productInventory = productsAPI.inventory(productID, mPartnerID, sessionCookie);
-        System.out.println("After productsAPI.inventory" + productInventory.toString());
+        InlineResponse200 productIDsInlineResponse = productsAPI.allPartnerProductIds(partnerID, englishUS.getLanguageId(), chicago.getGeographicId(), checkoutOnly, categoryIds, sessionCookie, additionalFields);
+        System.out.println("Products linked to your Partner ID: " + productIDsInlineResponse.toString());
 
-        ProductInfo productInfo = productsAPI.productInfo(productID, mPartnerID, languageId, sessionCookie);
-        System.out.println("After productsAPI.productInfo" + productInfo.toString());
+        // TODO: Find a VALID product from the list assigned to our Partner ID.
+        //BigDecimal productID = BigDecimal.valueOf(140944); // 133459, 140944, *141487, 145599, 145767, 146544, 146778, 158137, 160147
 
-        //InlineResponse2001 productTranslations = productsAPI.productTranslations(productID, mPartnerID, sessionCookie);
-        //System.out.println("After productsAPI.productTranslations" + productTranslations.toString());
+        // We'll take the first product returned.
+        BigDecimal productID = productIDsInlineResponse.getData().get(0).getProductId();
 
+        // Get count of how many products left in stock.
+        ProductInventory productInventory = productsAPI.inventory(productID, partnerID, sessionCookie);
+        System.out.println("Product Inventory: " + productInventory.toString());
+
+        // Ensure there is enough inventory.
+        if (productInventory.getData().getInventoryCount().equals(0)) return;
+
+        // Get detailed product info to display to customers.
+        ProductInfo productInfo = productsAPI.productInfo(productID, partnerID, englishUS.getLanguageId(), sessionCookie);
+        System.out.println("Product Information: " + productInfo.toString());
+
+        // Get estimated price for the product based on number of people and other variables.
         ShippingAddress shippingAddress = new ShippingAddress();
-        shippingAddress.setFirstName("Donald");
-        shippingAddress.setLastName("Duck");
-        shippingAddress.setLine1("114 5th Avenue");
-        shippingAddress.setCity("New York");
-        shippingAddress.setState("NY");
-        shippingAddress.setPostalCode("10011");
-        shippingAddress.setCountry("USA");
-        shippingAddress.setPhone("555 5555");
+        shippingAddress.setFirstName("Evans");
+        shippingAddress.setLastName("Luke");
+        shippingAddress.setLine1("123 Priceless Ave.");
+        shippingAddress.setCity("San Francisco");
+        shippingAddress.setState("CA");
+        shippingAddress.setPostalCode("94109");
+        shippingAddress.setCountry("US");
+        shippingAddress.setPhone("5556667878");
 
         InlineObject estimateCreateParams = new InlineObject();
-        estimateCreateParams.setPartnerId(mPartnerID);
+        estimateCreateParams.setPartnerId(partnerID);
         estimateCreateParams.setSessionCookie(sessionCookie);
         estimateCreateParams.setShippingAddress(shippingAddress);
         estimateCreateParams.setBillingAddress(shippingAddress);
 
         OrderItems orderItems = new OrderItems();
         orderItems.setProductId(productID);
-        orderItems.setPeoplePerItem(BigDecimal.valueOf(1));
+
+        // Number of people needs to match one of the variants for the product. Using first variant here.
+        orderItems.setPeoplePerItem(productInfo.getData().getVariants().get(0).getPeoplePerItem());
         orderItems.setQuantity(BigDecimal.valueOf(1));
         ArrayList<OrderItems> orderItemsArrayList = new ArrayList<OrderItems>();
         orderItemsArrayList.add(orderItems);
@@ -118,19 +123,48 @@ public class Tutorial {
 
         EstimatesApi estimatesApi = new EstimatesApi(apiClient);
         InlineResponse2002 estimateCreateResponse = estimatesApi.estimateCreate(estimateCreateParams);
-        System.out.println("After estimatesApi.estimateCreate" + estimateCreateResponse.toString());
+        System.out.println("Estimate Response: " + estimateCreateResponse.toString());
 
-        // The JSON coming back confuses it - it does not match the YAML ?
-        
+        // Place the Order (use Order ID returned from Estimate).
+        InlineObject1 ordersCreateParams = new InlineObject1();
+        ordersCreateParams.setPartnerId(partnerID);
+        ordersCreateParams.setSessionCookie(sessionCookie);
+        ordersCreateParams.setShippingAddress(shippingAddress);
+        ordersCreateParams.setBillingAddress(shippingAddress);
+        ordersCreateParams.setItems(orderItemsArrayList);
+
+        // Pull in the order id from the estimate to be used in the order call. Valid for 15 mins.
+        ordersCreateParams.setOrderId(estimateCreateResponse.getData().getOrderId());
+        ordersCreateParams.setEmail("luke@priceless.com");
+        ordersCreateParams.setLanguageId(englishUS.getLanguageId());
+
+        Payment payment = new Payment();
+        PaymentCreditCard creditCard = new PaymentCreditCard();
+        creditCard.setCardHolderName("Luke Evans");
+        creditCard.setCardNumber("5555555555554444");
+        creditCard.setCcv(BigDecimal.valueOf(274));
+        creditCard.setExpirationMonth(BigDecimal.valueOf(10));
+        creditCard.setExpirationYear(BigDecimal.valueOf(2022));
+        payment.setCreditCard(creditCard);
+        ordersCreateParams.setPayment(payment);
+
+        OrdersApi ordersApi = new OrdersApi(apiClient);
+        InlineResponse2003 ordersCreateResponse = ordersApi.orderCreate(ordersCreateParams);
+        System.out.println("Create Order Response: " + ordersCreateResponse.toString());
+
+        // Check the order status. Use the API Order ID returned from placing the order.
+        InlineResponse2004 ordersStatusesResponse = ordersApi.orderStatuses(ordersCreateResponse.getData().getOrderId(), partnerID);
+        System.out.println("Order status: " + ordersStatusesResponse.toString());
+
     }
 
     // Driver Function
     public static void main(String[] args)
     {
-        System.out.println("BEGIN");
         try {
+
             Tutorial obj = new Tutorial();
-            System.out.println("END");
+
         } catch (CertificateException e) {
             e.printStackTrace();
         } catch (UnrecoverableKeyException e) {
@@ -149,26 +183,3 @@ public class Tutorial {
 
     }
 }
-/*
-class A implements ApiCallback{
-    @Override
-    public void onFailure(ApiException e, int statusCode, Map<String, List<String>> responseHeaders) {
-        System.out.println("Failed");
-    }
-
-    @Override
-    public void onSuccess(Object result, int statusCode, Map responseHeaders) {
-        System.out.println("Success");
-    }
-
-    @Override
-    public void onUploadProgress(long bytesWritten, long contentLength, boolean done) {
-        System.out.println("Uploading");
-    }
-
-    @Override
-    public void onDownloadProgress(long bytesRead, long contentLength, boolean done) {
-        System.out.println("Downloading");
-    }
-}
-*/

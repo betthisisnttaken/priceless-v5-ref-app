@@ -106,7 +106,7 @@
                     <goal>generate</goal>
                 </goals>
                 <configuration>
-                    <inputSpec>${project.basedir}/src/main/resources/priceless_v5.yaml</inputSpec>
+                    <inputSpec>${project.basedir}/src/main/resources/pricelessV5.yaml</inputSpec>
                     <generatorName>java</generatorName>
                     <configOptions>
                         <sourceFolder>src/gen/java/main</sourceFolder>
