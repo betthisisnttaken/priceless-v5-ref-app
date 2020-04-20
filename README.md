@@ -1,4 +1,4 @@
-# Pay with Rewards Reference Implementation
+# Priceless API v5 Tutorial Implementation
 
 This code showcases reference implementation of Priceless v5 APIs from: [Mastercard Developers.](https://developer.mastercard.com/product/priceless-api-v5).
 
