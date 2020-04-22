@@ -7,7 +7,6 @@ import org.openapitools.client.api.*;
 import org.openapitools.client.model.*;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.security.*;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
@@ -19,7 +18,7 @@ public class Tutorial {
 
         // Read in application properties.
         ResourceBundle resourceBundle = ResourceBundle.getBundle("application");
-        BigDecimal partnerID = new BigDecimal(resourceBundle.getString("mastercard.api.partnerid"));
+        long partnerID = new Long(resourceBundle.getString("mastercard.api.partnerid"));
         PrivateKey signingKey = AuthenticationUtils.loadSigningKey(
                 resourceBundle.getString("mastercard.api.p12.path"),
                 resourceBundle.getString("mastercard.api.key.alias"),
@@ -68,9 +67,9 @@ public class Tutorial {
 
         // Get information about the Products - list of products, product info, product inventory.
         ProductsApi productsAPI = new ProductsApi(apiClient);
-        BigDecimal checkoutOnly = BigDecimal.valueOf(1); // 1 is products that can be checked out via API
+        int checkoutOnly = 1; // 1 is products that can be checked out via API
         String categoryIds = ""; // Comma delimited list of category ids to filter
-        BigDecimal additionalFields = BigDecimal.valueOf(0); // 1 is to include extra data
+        int additionalFields = 0; // 1 is to include extra data
 
         // Get geographic ID for Chicago so we can filter products to Chicago region only.
         // TODO: Set this to any valid region in your sandbox.
@@ -87,14 +86,14 @@ public class Tutorial {
 
        // We'll take the first product returned.
         if (productIDsResponse.getData() == null || productIDsResponse.getData().isEmpty()) return;
-        BigDecimal productID = productIDsResponse.getData().get(0).getProductId();
+        long productID = productIDsResponse.getData().get(0).getProductId();
 
         // Get count of how many products left in stock.
         ProductInventory productInventory = productsAPI.inventory(productID, partnerID, sessionCookie);
         System.out.printf("Product Inventory: %s%n", productInventory.toString());
 
         // Ensure there is enough inventory.
-        if (productInventory.getData() == null || productInventory.getData().getInventoryCount() == null || productInventory.getData().getInventoryCount().equals(BigDecimal.valueOf(0))) return;
+        if (productInventory.getData() == null || productInventory.getData().getInventoryCount() == null || productInventory.getData().getInventoryCount().equals(0)) return;
 
         // Get detailed product info to display to customers.
         ProductInfo productInfo = productsAPI.productInfo(productID, partnerID, englishUS.getLanguageId(), sessionCookie);
@@ -123,7 +122,7 @@ public class Tutorial {
         // Number of people needs to match one of the variants for the product. Using first variant here.
         if (productInfo.getData() == null || productInfo.getData().getVariants() == null || productInfo.getData().getVariants().isEmpty()) return;
         orderItems.setPeoplePerItem(productInfo.getData().getVariants().get(0).getPeoplePerItem());
-        orderItems.setQuantity(BigDecimal.valueOf(1));
+        orderItems.setQuantity(1);
         ArrayList<OrderItems> orderItemsArrayList = new ArrayList<>();
         orderItemsArrayList.add(orderItems);
         estimateCreateParams.setItems(orderItemsArrayList);
@@ -150,9 +149,9 @@ public class Tutorial {
         PaymentCreditCard creditCard = new PaymentCreditCard();
         creditCard.setCardHolderName("Luke Evans");
         creditCard.setCardNumber("5555555555554444");
-        creditCard.setCcv(BigDecimal.valueOf(274));
-        creditCard.setExpirationMonth(BigDecimal.valueOf(10));
-        creditCard.setExpirationYear(BigDecimal.valueOf(2022));
+        creditCard.setCcv(274);
+        creditCard.setExpirationMonth(10);
+        creditCard.setExpirationYear(2022);
         payment.setCreditCard(creditCard);
         ordersCreateParams.setPayment(payment);
 
