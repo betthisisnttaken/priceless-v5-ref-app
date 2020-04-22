@@ -36,8 +36,10 @@ This code showcases reference implementation of Priceless v5 APIs from: [Masterc
       - `mastercard.api.consumer.key` - Consumer key. Copy this from "Sandbox/Production Keys" on your project page
       - `mastercard.api.key.alias` - Key alias. Default key alias for sandbox is `keyalias`.
       - `mastercard.api.keystore.password` - Keystore password. Default keystore password for sandbox project is `keystorepassword`.
-9.  Run `mvn clean install` from the root of the project directory.
+9.  Run `mvn clean package` from the root of the project directory.
 10. Open the project in your favorite IDE and check the console for output.
+or
+11. Open a Terminal and navigate to the /target folder and run `java -jar priceless-v5-client.jar` 
  
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
      
