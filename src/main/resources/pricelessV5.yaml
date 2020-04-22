@@ -41,7 +41,8 @@ paths:
           description: partnerId provided by Priceless
           required: true
           schema:
-            type: number
+            type: integer
+            format: int64
             default: 484
             example: 484
         - in: query
@@ -49,19 +50,21 @@ paths:
           description: >-
             Filters all the products by availability in the specified language
           schema:
-            type: number
+            type: integer
+            format: int64
         - in: query
           name: geographic_id
           description: >-
             Filters all the products by availability in the specified geographic 
           schema:
-            type: number
+            type: integer
+            format: int64
         - in: query
           name: checkout_only
           description: >-
             Filters all the products by availability to complete checkout through the api, pass 1 to enable.
           schema:
-            type: number
+            type: integer
         - in: query
           name: category_ids
           description: >-
@@ -79,7 +82,7 @@ paths:
           description: >-
             Returns limited product information in addition to the normal response. For full product info, please use the /products/{productId} endpoint. Pass 1 to enable.
           schema:
-            type: number
+            type: integer
             default: 0
       responses:
         '200':
@@ -139,7 +142,8 @@ paths:
           description: productId for requested product info.
           required: true
           schema:
-            type: number
+            type: integer
+            format: int64
             default: 82980
             example: 82980
         - in: query
@@ -147,7 +151,8 @@ paths:
           description: partnerId provided by Priceless Cities
           required: true
           schema:
-            type: number
+            type: integer
+            format: int64
             default: 484
             example: 484
         - in: query
@@ -155,7 +160,8 @@ paths:
           description: >-
             Returns the product data in the language specified. If this parameter is not passed will return English (default value is 1 (English))
           schema:
-            type: number
+            type: integer
+            format: int64
         - in: query
           name: session_cookie
           description: >-
@@ -219,7 +225,8 @@ paths:
           description: productId for requested product inventory.
           required: true
           schema:
-            type: number
+            type: integer
+            format: int64
             default: 82980
             example: 82980
         - in: query
@@ -227,7 +234,8 @@ paths:
           description: partnerId provided by Priceless
           required: true
           schema:
-            type: number
+            type: integer
+            format: int64
             default: 484
             example: 484
         - in: query
@@ -293,7 +301,8 @@ paths:
           description: productId for requested availble translations.
           required: true
           schema:
-            type: number
+            type: integer
+            format: int64
             default: 82980
             example: 82980
         - in: query
@@ -301,7 +310,8 @@ paths:
           description: partnerId provided by Priceless
           required: true
           schema:
-            type: number
+            type: integer
+            format: int64
             default: 484
             example: 484
         - in: query
@@ -464,14 +474,16 @@ paths:
           description: order_id froma a previously placed order
           required: true
           schema:
-            type: number
+            type: integer
+            format: int64
             example: 100
         - in: query
           name: partner_id
           description: partner_id provided by Priceless
           required: true
           schema:
-            type: number
+            type: integer
+            format: int64
             example: 493
       responses:
         '200':
@@ -519,7 +531,8 @@ paths:
           description: partner_id provided by Priceless
           required: true
           schema:
-            type: number
+            type: integer
+            format: int64
             default: 484
             example: 484
         - in: query
@@ -579,7 +592,8 @@ paths:
           description: partnerId provided by Priceless
           required: true
           schema:
-            type: number
+            type: integer
+            format: int64
             example: 484
         - in: query
           name: session_cookie
@@ -639,7 +653,8 @@ paths:
           description: partnerId provided by Priceless
           required: true
           schema:
-            type: number
+            type: integer
+            format: int64
             example: 484
         - in: query
           name: session_cookie
@@ -754,7 +769,8 @@ components:
         - partnerId
       properties:
         partnerId:
-          type: number
+          type: integer
+          format: int64
           example: 484
       example:
         partnerId: 484
@@ -809,21 +825,24 @@ components:
             type: object
             properties:
               productId:
-                type: number
+                type: integer
+                format: int64
                 example: 82980
               masterProductIds:
                 type: array
                 items:
-                  type: number
+                  type: integer
+                  format: int64
                   example: 82980
               hasVersion:
-                type: number
+                type: integer
                 example: 1
               childrenProductIds:
                 type: array
                 default: []
                 items:
-                  type: number
+                  type: integer
+                  format: int64
                   example: 82981
     ProductInfo:
       type: object
@@ -835,7 +854,8 @@ components:
           type: object
           properties:
             productId:
-              type: number
+              type: integer
+              format: int64
               example: 123
             displayName:
               type: string
@@ -851,13 +871,15 @@ components:
               type: string
               example: ''
             specialOffer:
-              type: number
+              type: integer
               example: 1
             celebId:
-              type: number
+              type: integer
+              format: int64
               example: 5
             localeId:
-              type: number
+              type: integer
+              format: int64
               example: 1
             celebName:
               type: string
@@ -870,7 +892,8 @@ components:
               example: >-
                 https://www.priceless.com/media/celebrities/5/products/kobe_bryant.jpg
             charityId:
-              type: number
+              type: integer
+              format: int64
               example: 5
             charityName:
               type: string
@@ -909,21 +932,25 @@ components:
               example: ''
             latitude:
               type: number
+              format: double
               example: 37.4562557
             longitude:
               type: number
+              format: double
               example: 126.705206
             geographicId:
-              type: number
+              type: integer
+              format: int64
               example: 8865
             sharedPeoplePerItem:
-              type: number
+              type: integer
               example: 1
             eventVenue:
               type: string
               example: ''
             catId:
-              type: number
+              type: integer
+              format: int64
               example: 35
             catName:
               type: string
@@ -973,7 +1000,7 @@ components:
                   type: string
                   example: Phone Call
                 punchOutActive:
-                  type: number
+                  type: integer
                   example: 1
                 punchOutInstructions:
                   type: string
@@ -1018,7 +1045,7 @@ components:
                   peoplePerItem: 2
                   price: '99.98'
             mastercardGlobal:
-              type: number
+              type: integer
               example: 1
             extraInfo:
               type: object
@@ -1026,10 +1053,11 @@ components:
       type: object
       properties:
         productId:
-          type: number
+          type: integer
+          format: int64
           example: 140965
         peoplePerItem:
-          type: number
+          type: integer
           example: 2
         price:
           type: string
@@ -1038,7 +1066,8 @@ components:
       type: object
       properties:
         catId:
-          type: number
+          type: integer
+          format: int64
           example: 503
         catName:
           type: string
@@ -1047,7 +1076,8 @@ components:
       type: object
       properties:
         mastercardIssuerId:
-          type: number
+          type: integer
+          format: int64
           example: 1011
         mastercardIssuerName:
           type: string
@@ -1062,7 +1092,7 @@ components:
           type: object
           properties:
             inventoryCount:
-              type: number
+              type: integer
               example: 2
     OrdersRequest:
       type: object
@@ -1077,16 +1107,19 @@ components:
         - emailAddress
       properties:
         partnerId:
-          type: number
+          type: integer
+          format: int64
           example: 484
         orderId:
-          type: number
+          type: integer
+          format: int64
           example: 51
         email:
           type: string
           example: luke@priceless.com
         languageId:
-          type: number
+          type: integer
+          format: int64
           example: 1
         items:
           type: array
@@ -1147,7 +1180,8 @@ components:
             type: object
             properties:
               languageId:
-                type: number
+                type: integer
+                format: int64
                 example: 1
               languageName:
                 type: string
@@ -1164,7 +1198,8 @@ components:
             type: object
             properties:
               geographicId:
-                type: number
+                type: integer
+                format: int64
                 example: 330
               geographicName:
                 type: string
@@ -1181,7 +1216,8 @@ components:
             type: object
             properties:
               catId:
-                type: number
+                type: integer
+                format: int64
                 example: 1
               catName:
                 type: string
@@ -1190,13 +1226,14 @@ components:
       type: object
       properties:
         productId:
-          type: number
+          type: integer
+          format: int64
           example: 123
         peoplePerItem:
-          type: number
+          type: integer
           example: 2
         quantity:
-          type: number
+          type: integer
           example: 1
     ShippingAddress:
       type: object
@@ -1235,10 +1272,12 @@ components:
           type: object
           properties:
             apiOrderId:
-              type: number
+              type: integer
+              format: int64
               example: 51
             orderId:
-              type: number
+              type: integer
+              format: int64
               example: 1000
     OrdersStatusResponse:
       type: object
@@ -1250,13 +1289,15 @@ components:
           type: object
           properties:
             orderId:
-              type: number
+              type: integer
+              format: int64
               example: 1000
             orderStatusName:
               type: string
               example: Pending Experience
             orderStatusId:
-              type: number
+              type: integer
+              format: int64
               example: 22
             changeTime:
               type: string
@@ -1270,7 +1311,8 @@ components:
         - billingAddress
       properties:
         partnerId:
-          type: number
+          type: integer
+          format: int64
         items:
           type: array
           items:
@@ -1316,7 +1358,8 @@ components:
           type: object
           properties:
             orderId:
-              type: number
+              type: integer
+              format: int64
               example: 51
             itemPrices:
               type: array
@@ -1327,31 +1370,37 @@ components:
                     type: string
                     example: "123_1"
                   productId:
-                    type: number
+                    type: integer
+                    format: int64
                     example: 123
                   peoplePerItem:
-                    type: number
+                    type: integer
                     example: 1
                   quantity:
-                    type: number
+                    type: integer
                     example: 2
                   unitPrice:
                     type: number
+                    format: double
                     example: 7000
             tax:
               type: number
+              format: double
               example: 1050
             shippingMethod:
               type: string
               example: Ground
             shipping:
               type: number
+              format: double
               example: 0
             subtotal:
               type: number
+              format: double
               example: 14000
             total:
               type: number
+              format: double
               example: 15500
             currencyCode:
               type: string
@@ -1369,11 +1418,11 @@ components:
               type: string
               example: 5555555555554444
             expirationMonth:
-              type: number
+              type: integer
               example: 10
             expirationYear:
-              type: number
+              type: integer
               example: 2022
             ccv:
-              type: number
+              type: integer
               example: 274
