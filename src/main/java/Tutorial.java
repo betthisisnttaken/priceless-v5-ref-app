@@ -69,7 +69,7 @@ public class Tutorial {
         ProductsApi productsAPI = new ProductsApi(apiClient);
         int checkoutOnly = 1; // 1 is products that can be checked out via API
         String categoryIds = ""; // Comma delimited list of category ids to filter
-        int additionalFields = 0; // 1 is to include extra data
+        int additionalFields = 1; // 1 is to include extra data, 0 just return product ids.
 
         // Get geographic ID for Chicago so we can filter products to Chicago region only.
         // TODO: Set this to any valid region in your sandbox.
@@ -81,7 +81,7 @@ public class Tutorial {
         if (chicago == null)
             return;
 
-        AllProductIdsStruct productIDsResponse = productsAPI.allPartnerProductIds(partnerID, englishUS.getLanguageId(), chicago.getGeographicId(), checkoutOnly, categoryIds, sessionCookie, additionalFields);
+        AllProductIdsStructWithAdditionalFields productIDsResponse = productsAPI.allPartnerProductIds(partnerID, englishUS.getLanguageId(), chicago.getGeographicId(), checkoutOnly, categoryIds, sessionCookie, additionalFields);
         System.out.printf("Products linked to your Partner ID: %s%n", productIDsResponse.toString());
 
        // We'll take the first product returned.
