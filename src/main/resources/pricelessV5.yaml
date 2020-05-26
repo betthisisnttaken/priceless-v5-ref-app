@@ -90,7 +90,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AllProductIdsStruct'
+                $ref: '#/components/schemas/AllProductIdsStructWithAdditionalFields'
               example:
                 - productId: 82980
                   masterProductIds:
@@ -844,6 +844,86 @@ components:
                   type: integer
                   format: int64
                   example: 82981
+    AllProductIdsStructWithAdditionalFields:
+      type: object
+      properties:
+        msg:
+          type: string
+          example: OK
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              productId:
+                type: integer
+                format: int64
+                example: 82980
+              productName:
+                type: string
+                example: Test Product 82980
+              displayName:
+                type: string
+                example: Test Product 82980. For 2 people.
+              eventVenue:
+                type: string
+                example: ""
+              geographicId:
+                type: integer
+                format: int64
+                example: 330
+              latitude:
+                type: number
+                format: double
+                example: 40.72993
+              longitude:
+                type: number
+                format: double
+                example: -74.00295
+              masterProductIds:
+                type: array
+                items:
+                  type: integer
+                  format: int64
+                  example: 82980
+              hasVersion:
+                type: integer
+                example: 1
+              productUrl:
+                type: string
+                example: https://demo.priceless.com/p/82980
+              celebImageUrl:
+                type: string
+                example: https://www.priceless.com/celebimg.jpg
+              imageUrl:
+                type: string
+                example: https://www.priceless.com/productimg.jpg
+              celebName:
+                type: string
+                example: Priceless
+              eventCity:
+                type: string
+                example: New York, New York
+              childrenProductIds:
+                type: array
+                default: []
+                items:
+                  type: integer
+                  format: int64
+                  example: 82981
+            example:
+              - productId: 82980
+                masterProductIds:
+                  - 82980
+                hasVersion: 2
+                childrenProductIds:
+                  - 82981
+                  - 82982
+              - productId: 83015
+                masterProductIds:
+                  - 83015
+                hasVersion: 0
+                childrenProductIds: []
     ProductInfo:
       type: object
       properties:
